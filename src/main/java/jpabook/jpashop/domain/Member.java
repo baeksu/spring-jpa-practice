@@ -23,4 +23,7 @@ public class Member {
 
     @OneToMany(mappedBy = "member")//나는 연관관계 주인이 아니에요. 읽기전용으로 된다.
     private List<Order> orders = new ArrayList<>();
+
+
+
 }

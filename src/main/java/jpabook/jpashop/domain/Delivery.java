@@ -2,6 +2,7 @@ package jpabook.jpashop.domain;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.util.Lazy;
 
 import javax.persistence.*;
 
@@ -15,7 +16,8 @@ public class Delivery {
     @Column(name = "delivery_id")
     private Long id;
 
-    @OneToOne(mappedBy = "delivery")
+
+    @OneToOne(mappedBy = "delivery" , fetch = FetchType.LAZY)
     private Order order;
 
     @Embedded
