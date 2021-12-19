@@ -13,6 +13,8 @@ import java.util.List;
 @Getter @Setter
 public class Order {
 
+    protected Order(){}
+
     @Id @GeneratedValue
     @Column(name = "order_id")
     private Long id;
@@ -36,8 +38,9 @@ public class Order {
     private Delivery delivery;
 
 
+
     //order_date 로 컬럼등록이 된다.
-    private LocalDateTime orderDat;//자바-8 에 있는 시간을 저장하는 클래스 인듯 , 주문시간
+    private LocalDateTime orderDate;//자바-8 에 있는 시간을 저장하는 클래스 인듯 , 주문시간
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;//주문 상태 [ORDER, CANCEL]
@@ -57,6 +60,58 @@ public class Order {
         this.delivery = delivery;
         delivery.setOrder(this);
     }
+
+    //==주문 생성 메서드==//
+    public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems) {
+        //... 문법으로 OrderItem을 여러개 넘길 수 있도록 해줬다.
+        Order order = new Order();
+        order.setMember(member);
+        order.setDelivery(delivery);
+        for (OrderItem orderItem : orderItems) {
+            order.addOrderItem(orderItem);
+        }
+
+        order.setStatus(OrderStatus.ORDER);
+        order.setOrderDate(LocalDateTime.now());
+        return order;
+    }
+
+    //== 비즈니스 로직==//
+    /**
+     * 주문 취소
+     */
+    public void cancel(){
+        if (delivery.getStatus() == DeliveryStatus.COMP) {
+            throw new IllegalStateException("이미 배송 완료된 상품은 취소가 불가능합니다.");
+        }
+
+        this.setStatus(OrderStatus.CANCEL);
+        for (OrderItem orderItem : orderItems) {
+            orderItem.cancel();//상품 재고수량을 다시 원복해준다.
+        }
+    }
+
+    //==조회 로직==//
+
+    /**
+     * 전체 주문 가격 조회
+     * @return
+     */
+    public int getTotalPrice(){
+//        int totalPrice = 0;
+//        for (OrderItem orderItem : orderItems) {
+//            totalPrice += orderItem.getTotalPrice();//수량*가격을 리턴해준다
+//        }
+//        return totalPrice;
+
+        //스트림을 쓰면 다음과 같이 줄일 수 있다.
+        int totalPrice = orderItems.stream().mapToInt(OrderItem::getTotalPrice).sum();
+        //수량*가격을 리턴해준다
+        return totalPrice;
+    }
+
+
+
 
 
 }
